@@ -1,3 +1,9 @@
+/*
+*
+* PREOPEN
+*
+*/
+
 #open-quiz-btn {
     background: #3E92A2;
     transition: all .3s ease;
@@ -8,6 +14,12 @@
     border: 1px solid transparent;
     border-radius: 5px;
 }
+
+/*
+*
+* GENERAL POPUP
+*
+*/
 
 .quiz-popup {
     display: none;
@@ -33,9 +45,41 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Nascondi tutte le sezioni del quiz tranne la prima */
+/*
+*
+* FIRST SECTION
+*
+*/
+
+#quiz-next-btn {
+    margin: 5px;
+}
+
+#quiz-section-personal-data h3, #quiz-section-personal-data p, #quiz-section-personal-data input, #quiz-section-personal-data select {
+    margin: 5px;
+}
+
+/*
+*
+* SECOND SECTION
+*
+*/
+
+#quiz-section-describe-symptoms h3, #quiz-section-describe-symptoms p, #quiz-section-describe-symptoms select, #quiz-section-describe-symptoms #quiz-back-btn-2, #quiz-section-describe-symptoms #quiz-next-btn-2 {
+    margin: 5px;
+}
+
 #quiz-section-describe-symptoms {
     display: none;
+}
+
+#quiz-symptoms-search, #quiz-symptoms-dropdown {
+    height: 30px;
+}
+
+#quiz-symptoms-search {
+    margin-top: 5px;
+    margin-left: 5px;
 }
 
 .form-row {
@@ -49,19 +93,21 @@
     flex: 1;
 }
 
-.selected-symptom {
+.quiz-symptom {
     display: inline-block;
-    padding: 5px;
+    padding: 0 5px;
     margin: 5px;
     border: 1px solid #ccc;
     border-radius: 5px;
     background-color: #f5f5f5;
 }
 
-.remove-symptom-icon {
+.quiz-symptom-remove {
     margin-left: 5px;
     color: #999;
     cursor: pointer;
+    border: 0;
+    background: transparent;
 }
 
 #quiz-close-btn {

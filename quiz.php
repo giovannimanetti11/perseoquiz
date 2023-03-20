@@ -13,16 +13,19 @@ function perseoquiz_shortcode() {
             <div id="quiz-section-describe-symptoms">
                 <h3>Descrivi i tuoi sintomi</h3>
                 <p>Seleziona i tuoi sintomi dall'elenco sottostante:</p>
-                <select id="quiz-symptoms-dropdown" name="quiz-symptoms-dropdown" multiple>
-                    <!-- Le opzioni verranno aggiunte dinamicamente tramite JavaScript -->
-                </select>
+                <div class="form-row">
+                    <input type="text" id="quiz-symptoms-search" placeholder="Cerca sintomi...">
+                    <select id="quiz-symptoms-dropdown" name="quiz-symptoms-dropdown">
+                        <!-- Le opzioni verranno aggiunte dinamicamente tramite JavaScript -->
+                    </select>
+                </div>
 
 
                 <div id="quiz-selected-symptoms">
                     <!-- Qui verranno inseriti i sintomi selezionati -->
                 </div>
-                <button id="quiz-back-btn-2">INDIETRO</button>
-                <button id="quiz-next-btn-2">AVANTI</button>
+                <button id="quiz-back-btn-2" class="btn btn-danger">INDIETRO</button>
+                <button id="quiz-next-btn-2" class="btn btn-success">AVANTI</button>
             </div>
 
             <div id="quiz-section-3" style="display: none;">
@@ -40,6 +43,7 @@ add_shortcode( 'perseoquiz', 'perseoquiz_shortcode' );
 function perseoquiz_get_symptoms() {
     global $wpdb;
     $symptoms = $wpdb->get_results("SELECT * FROM wh_sintomi");
+    header('Content-Type: application/json');
     echo json_encode($symptoms);
     wp_die();
 }

@@ -1,31 +1,30 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const openQuizBtn = document.getElementById("open-quiz-btn");
-    const quizPopup = document.getElementById("quiz-popup");
-    const personalDataSection = document.getElementById("quiz-section-personal-data");
-    const describeSymptomsSection = document.getElementById("quiz-section-describe-symptoms");
-    const quizNextBtn2 = document.getElementById("quiz-next-btn-2");
-    const quizBackBtn2 = document.getElementById("quiz-back-btn-2");
-    const quizSelectedSymptoms = document.getElementById("quiz-selected-symptoms");
-    const symptomsDropdown = document.getElementById("quiz-symptoms-dropdown");
-
-
+const openQuizBtn = document.getElementById("open-quiz-btn");
+const quizPopup = document.getElementById("quiz-popup");
+const personalDataSection = document.getElementById("quiz-section-personal-data");
+const describeSymptomsSection = document.getElementById("quiz-section-describe-symptoms");
+const quizNextBtn2 = document.getElementById("quiz-next-btn-2");
+const quizBackBtn2 = document.getElementById("quiz-back-btn-2");
+const quizSelectedSymptoms = document.getElementById("quiz-selected-symptoms");
+const symptomsDropdown = document.getElementById("quiz-symptoms-dropdown");
+const searchInput = document.getElementById('quiz-symptoms-search');
+const quizSection3 = document.getElementById("quiz-section-3");
 
 
     // Mostra il popup quando si fa clic sul pulsante "Apri il Quiz"
     openQuizBtn.addEventListener("click", function () {
         quizPopup.style.display = "block";
     });
-    
+
     // Permette di chiudere il popup cliccando l'icona x
     const quizCloseBtn = document.getElementById("quiz-close-btn");
-        quizCloseBtn.addEventListener("click", function () {
-            quizPopup.style.display = "none";
-        });
-
+    quizCloseBtn.addEventListener("click", function () {
+        quizPopup.style.display = "none";
+    });
 
     // Crea il contenuto della sezione "Dati personali"
     personalDataSection.innerHTML = `
-        <h2>Dati personali</h2>
+        <h3>Dati personali</h3>
         <p>Per favore, compila i campi sottostanti per fornirti una risposta più personalizzata.</p>
         <div class="form-row">
             <input type="text" id="quiz-name" name="quiz-name" placeholder="Nome" required>
@@ -46,9 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 <option value="F">F</option>
             </select>
         </div>
-        <button id="quiz-next-btn">AVANTI</button>
+        <button id="quiz-next-btn" class="btn btn-success">AVANTI</button>
     `;
-
     const nextBtn = document.getElementById("quiz-next-btn");
 
     // Passa alla sezione successiva quando si fa clic sul pulsante "AVANTI"
@@ -58,7 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Va alla sezione precedente quando si fa clic sul pulsante "INDIETRO"
-
     quizBackBtn2.addEventListener("click", function () {
         describeSymptomsSection.style.display = "none";
         personalDataSection.style.display = "block";
@@ -71,7 +68,9 @@ document.addEventListener("DOMContentLoaded", function () {
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
         },
         body: `action=perseoquiz_get_symptoms&_ajax_nonce=${quiz_ajax_obj.nonce}`
+
     })
+    
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error ${response.status}`);
@@ -89,34 +88,76 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => {
             console.error('Errore nella richiesta AJAX:', error);
         });
-
-
-        
     // Aggiorna i sintomi selezionati
     function updateSelectedSymptoms() {
-        quizSelectedSymptoms.innerHTML = ''; // Svuota il contenuto del div
-        Array.from(symptomsDropdown.selectedOptions).forEach(option => {
-            const symptom = document.createElement('span');
-            symptom.textContent = option.text;
-            symptom.classList.add('selected-symptom');
-
-            const removeIcon = document.createElement('span');
-            removeIcon.textContent = ' x';
-            removeIcon.classList.add('remove-symptom-icon');
-
-            // Rimuovi il sintomo al clic sull'icona "x"
-            removeIcon.addEventListener('click', () => {
-                option.selected = false;
-                updateSelectedSymptoms();
+        Array.from(symptomsDropdown.selectedOptions).forEach((selectedOption) => {
+            // Verifica se il sintomo è già stato aggiunto
+            if (quizSelectedSymptoms.querySelector(`[data-id="${selectedOption.value}"]`)) {
+                return;
+            }
+    
+            const symptomDiv = document.createElement('div');
+            symptomDiv.className = 'quiz-symptom';
+            symptomDiv.setAttribute('data-id', selectedOption.value);
+            symptomDiv.textContent = selectedOption.text;
+    
+            const removeButton = document.createElement('button');
+            removeButton.className = 'quiz-symptom-remove';
+            removeButton.textContent = 'x';
+            removeButton.addEventListener('click', () => {
+                selectedOption.selected = false;
+                quizSelectedSymptoms.removeChild(symptomDiv);
             });
-
-            symptom.appendChild(removeIcon);
-            quizSelectedSymptoms.appendChild(symptom);
+    
+            symptomDiv.appendChild(removeButton);
+            quizSelectedSymptoms.appendChild(symptomDiv);
         });
     }
+    
+    
 
-    // Aggiungi l'evento "change" per il dropdown
-    symptomsDropdown.addEventListener('change', updateSelectedSymptoms);
+    // Aggiungi questo event listener
+    symptomsDropdown.addEventListener('change', () => {
+        updateSelectedSymptoms();
+    });
+    
+    
+
+
+    // Aggiungi un event listener all'input di ricerca
+    searchInput.addEventListener('input', (event) => {
+        const searchTerm = event.target.value.toLowerCase();
+        function filterSymptoms(searchTerm) {
+            let option;
+            for (let i = 0; i < symptomsDropdown.options.length; i++) {
+                option = symptomsDropdown.options[i];
+                if (option.text.toLowerCase().indexOf(searchTerm) > -1) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+        }
+    });
+    searchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const searchTerm = event.target.value.toLowerCase();
+    
+            Array.from(symptomsDropdown.options).forEach(option => {
+                const optionText = option.text.toLowerCase();
+                if (optionText.includes(searchTerm)) {
+                    option.selected = true;
+                    updateSelectedSymptoms();
+                    searchInput.value = '';
+                }
+            });
+        }
+    });
+    
+    
+
+
 
     // Passa alla sezione successiva quando si fa clic sul pulsante "AVANTI"
     quizNextBtn2.addEventListener('click', () => {
@@ -124,4 +165,5 @@ document.addEventListener("DOMContentLoaded", function () {
         quizSection3.style.display = 'block';
     });
 });
-        
+
+
