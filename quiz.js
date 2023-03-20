@@ -8,7 +8,7 @@ const quizBackBtn2 = document.getElementById("quiz-back-btn-2");
 const quizSelectedSymptoms = document.getElementById("quiz-selected-symptoms");
 const symptomsDropdown = document.getElementById("quiz-symptoms-dropdown");
 const searchInput = document.getElementById('quiz-symptoms-search');
-const quizSection3 = document.getElementById("quiz-section-3");
+const quizSectionRemedies = document.getElementById("quiz-section-remedies");
 
 
     // Mostra il popup quando si fa clic sul pulsante "Apri il Quiz"
@@ -25,7 +25,7 @@ const quizSection3 = document.getElementById("quiz-section-3");
     // Crea il contenuto della sezione "Dati personali"
     personalDataSection.innerHTML = `
         <h3>Dati personali</h3>
-        <p>Per favore, compila i campi sottostanti per fornirti una risposta più personalizzata.</p>
+        <p>Per favore, compila i campi sottostanti per fornirti un'informazione più personalizzata.</p>
         <div class="form-row">
             <input type="text" id="quiz-name" name="quiz-name" placeholder="Nome" required>
             <select id="quiz-age-range" name="quiz-age-range">
@@ -103,7 +103,7 @@ const quizSection3 = document.getElementById("quiz-section-3");
     
             const removeButton = document.createElement('button');
             removeButton.className = 'quiz-symptom-remove';
-            removeButton.textContent = 'x';
+            removeButton.innerHTML = '<i class="fa fa-times"></i>';
             removeButton.addEventListener('click', () => {
                 selectedOption.selected = false;
                 quizSelectedSymptoms.removeChild(symptomDiv);
@@ -154,16 +154,59 @@ const quizSection3 = document.getElementById("quiz-section-3");
             });
         }
     });
-    
-    
-
-
 
     // Passa alla sezione successiva quando si fa clic sul pulsante "AVANTI"
     quizNextBtn2.addEventListener('click', () => {
-        describeSymptomsSection.style.display = 'none';
-        quizSection3.style.display = 'block';
+        // Prepariamo un array di ID dei sintomi selezionati
+        const selectedSymptomIds = Array.from(quizSelectedSymptoms.children)
+            .map(symptomDiv => parseInt(symptomDiv.getAttribute('data-id')));
+    
+        if (selectedSymptomIds.length === 0) {
+            alert("Seleziona almeno un sintomo prima di procedere.");
+            return;
+        }
+    
+        // Eseguiamo una richiesta AJAX per ottenere le erbe corrispondenti ai sintomi selezionati
+        fetch(quiz_ajax_obj.ajax_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            },
+            body: `action=perseoquiz_get_herbs_by_symptoms&_ajax_nonce=${quiz_ajax_obj.nonce}&symptom_ids=${selectedSymptomIds.join(',')}`
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const herbs = Object.values(data.data); // Converti l'oggetto in un array
+                    let herbsList = '';
+            
+                    herbs.forEach(herb => {
+                        herbsList += `<li>${herb.title}</li>`;
+                    });
+            
+                    quizSectionRemedies.innerHTML = `
+                        <h3>Erbe utili contro ${quizSelectedSymptoms.textContent}</h3>
+                        <ul id="quiz-herbs-list">${herbsList}</ul>
+                    `;
+            
+                    describeSymptomsSection.style.display = 'none';
+                    quizSectionRemedies.style.display = 'block';
+                } else {
+                    console.error('Errore nella richiesta AJAX:', data.data);
+                }
+            })
+            
+            .catch(error => {
+                console.error('Errore nella richiesta AJAX:', error);
+            });
     });
+    
+
 });
 
 

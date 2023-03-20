@@ -114,4 +114,19 @@
     margin-left: 550px;
     color: #000;
 }
-    
+
+
+
+/*
+*
+* THIRD SECTION
+*
+*/
+
+#quiz-herbs-list {
+    padding: 0;
+}
+
+#quiz-herbs-list li {
+    list-style-type: none;
+}
