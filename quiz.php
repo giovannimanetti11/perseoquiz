@@ -26,13 +26,16 @@ function perseoquiz_shortcode() {
                 <div id="quiz-selected-symptoms">
                     <!-- Qui verranno inseriti i sintomi selezionati -->
                 </div>
-                <button id="quiz-back-btn-2" class="btn btn-danger">INDIETRO</button>
-                <button id="quiz-next-btn-2" class="btn btn-success">AVANTI</button>
+                <div class="control-buttons">
+                    <button id="quiz-back-btn-2" class="btn btn-danger">INDIETRO</button>
+                    <button id="quiz-next-btn-2" class="btn btn-success">AVANTI</button>
+                </div>
             </div>
             <!-- SEZIONE 3 - RIMEDI -->
-            <div id="quiz-section-remedies" style="display: none;">ù
-
+            <div id="quiz-section-remedies" style="display: none;">
+                
             </div>
+
 
 
         </div>
@@ -65,7 +68,7 @@ function perseoquiz_get_herbs_by_symptoms() {
 
     global $wpdb;
     $herbs = $wpdb->get_results(
-        "SELECT DISTINCT p.ID, p.post_title as title
+        "SELECT DISTINCT p.ID, p.guid, p.post_title as title
          FROM {$wpdb->posts} p
          INNER JOIN {$wpdb->term_relationships} tr ON p.ID = tr.object_id
          INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id

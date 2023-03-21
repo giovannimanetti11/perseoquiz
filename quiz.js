@@ -1,28 +1,30 @@
 document.addEventListener("DOMContentLoaded", function () {
-const openQuizBtn = document.getElementById("open-quiz-btn");
-const quizPopup = document.getElementById("quiz-popup");
-const personalDataSection = document.getElementById("quiz-section-personal-data");
-const describeSymptomsSection = document.getElementById("quiz-section-describe-symptoms");
-const quizNextBtn2 = document.getElementById("quiz-next-btn-2");
-const quizBackBtn2 = document.getElementById("quiz-back-btn-2");
-const quizSelectedSymptoms = document.getElementById("quiz-selected-symptoms");
-const symptomsDropdown = document.getElementById("quiz-symptoms-dropdown");
-const searchInput = document.getElementById('quiz-symptoms-search');
-const quizSectionRemedies = document.getElementById("quiz-section-remedies");
+
+    // DEFINISCE VARIABILI
+    const openQuizBtn = document.getElementById("open-quiz-btn");
+    const quizPopup = document.getElementById("quiz-popup");
+    const personalDataSection = document.getElementById("quiz-section-personal-data");
+    const describeSymptomsSection = document.getElementById("quiz-section-describe-symptoms");
+    const quizNextBtn2 = document.getElementById("quiz-next-btn-2");
+    const quizBackBtn2 = document.getElementById("quiz-back-btn-2");
+    const quizSelectedSymptoms = document.getElementById("quiz-selected-symptoms");
+    const symptomsDropdown = document.getElementById("quiz-symptoms-dropdown");
+    const searchInput = document.getElementById('quiz-symptoms-search');
+    const quizSectionRemedies = document.getElementById("quiz-section-remedies");
 
 
-    // Mostra il popup quando si fa clic sul pulsante "Apri il Quiz"
+    // AVVIA IL POPUP CLICCANDO IL PULSANTE "APRI IL QUIZ"
     openQuizBtn.addEventListener("click", function () {
         quizPopup.style.display = "block";
     });
 
-    // Permette di chiudere il popup cliccando l'icona x
+    // CHIUDE IL POPUP CLICCANDO X
     const quizCloseBtn = document.getElementById("quiz-close-btn");
     quizCloseBtn.addEventListener("click", function () {
         quizPopup.style.display = "none";
     });
 
-    // Crea il contenuto della sezione "Dati personali"
+    // CONTENUTO "DATI PERSONALI"
     personalDataSection.innerHTML = `
         <h3>Dati personali</h3>
         <p>Per favore, compila i campi sottostanti per fornirti un'informazione più personalizzata.</p>
@@ -39,6 +41,8 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
         </div>
         <div class="form-row">
             <input type="email" id="quiz-email" name="quiz-email" placeholder="Email" required>
+        
+
             <select id="quiz-gender" name="quiz-gender">
                 <option value="">Sesso</option>
                 <option value="M">M</option>
@@ -49,19 +53,57 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
     `;
     const nextBtn = document.getElementById("quiz-next-btn");
 
-    // Passa alla sezione successiva quando si fa clic sul pulsante "AVANTI"
+    // CONTROLLO SUI CAMPI PRIMA DI PASSARE ALLA SEZIONE SUCCESSIVA CLICCANDO "AVANTI"
     nextBtn.addEventListener("click", function () {
+        const quizName = document.getElementById("quiz-name");
+        const quizAgeRange = document.getElementById("quiz-age-range");
+        const quizEmail = document.getElementById("quiz-email");
+        const quizGender = document.getElementById("quiz-gender");
+        
+        
+        const errorDiv = personalDataSection.querySelector('.alert-danger');
+        if (errorDiv) errorDiv.remove();
+        
+        let errorMessage = "";
+        
+        if (!quizName.value || !quizAgeRange.value || !quizEmail.value || !quizGender.value) {
+            errorMessage = "Per favore inserisci tutti i campi";
+        }
+        
+        if (!isValidEmail(quizEmail.value)) {
+            errorMessage = "Inserisci un indirizzo email valido";
+        }
+        
+        if (errorMessage !== "") {
+            const errorDiv = document.createElement("div");
+            errorDiv.classList.add("alert", "alert-danger");
+            errorDiv.role = "alert";
+            errorDiv.innerHTML = `
+            <p>${errorMessage}</p>
+            `;
+        
+            personalDataSection.insertBefore(errorDiv, nextBtn);
+            return;
+        }
+        
         personalDataSection.style.display = "none";
         describeSymptomsSection.style.display = "block";
-    });
+        });
+        
 
-    // Va alla sezione precedente quando si fa clic sul pulsante "INDIETRO"
+        function isValidEmail(email) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+        }
+        
+        
+    // VA ALLA SEZIONE PRECEDENTE CLICCANDO "INDIETRO"
     quizBackBtn2.addEventListener("click", function () {
         describeSymptomsSection.style.display = "none";
         personalDataSection.style.display = "block";
     });
 
-    // Carica i sintomi dal database e aggiungi le opzioni al menu a tendina
+    // CARICA I SINTOMI DAL DB E LI AGGIUNGE AL DROPDOWN
     fetch(quiz_ajax_obj.ajax_url, {
         method: "POST",
         headers: {
@@ -70,7 +112,7 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
         body: `action=perseoquiz_get_symptoms&_ajax_nonce=${quiz_ajax_obj.nonce}`
 
     })
-    
+
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error ${response.status}`);
@@ -78,6 +120,10 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
             return response.json();
         })
         .then(symptoms => {
+            // Ordina l'array dei sintomi in ordine alfabetico
+            symptoms.sort((a, b) => a.nome.localeCompare(b.nome));
+        
+            // Crea e aggiunge gli elementi <option> al dropdown
             symptoms.forEach(symptom => {
                 const option = document.createElement("option");
                 option.value = symptom.id;
@@ -85,22 +131,23 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
                 symptomsDropdown.add(option);
             });
         })
+        
         .catch(error => {
             console.error('Errore nella richiesta AJAX:', error);
         });
-    // Aggiorna i sintomi selezionati
+    // AGGIORNA I SINTOMI
     function updateSelectedSymptoms() {
         Array.from(symptomsDropdown.selectedOptions).forEach((selectedOption) => {
-            // Verifica se il sintomo è già stato aggiunto
+            // VERIFICA CHE IL SINTOMO SIA STATO AGGIUNTO
             if (quizSelectedSymptoms.querySelector(`[data-id="${selectedOption.value}"]`)) {
                 return;
             }
-    
+
             const symptomDiv = document.createElement('div');
             symptomDiv.className = 'quiz-symptom';
             symptomDiv.setAttribute('data-id', selectedOption.value);
             symptomDiv.textContent = selectedOption.text;
-    
+
             const removeButton = document.createElement('button');
             removeButton.className = 'quiz-symptom-remove';
             removeButton.innerHTML = '<i class="fa fa-times"></i>';
@@ -108,23 +155,32 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
                 selectedOption.selected = false;
                 quizSelectedSymptoms.removeChild(symptomDiv);
             });
-    
+
             symptomDiv.appendChild(removeButton);
-            quizSelectedSymptoms.appendChild(symptomDiv);
+
+            // INSERISCE IL SINTOMO IN ORDINE ALFABETICO
+            let inserted = false;
+            Array.from(quizSelectedSymptoms.children).some(child => {
+                if (child.textContent.localeCompare(selectedOption.text) > 0) {
+                    quizSelectedSymptoms.insertBefore(symptomDiv, child);
+                    inserted = true;
+                    return true;
+                }
+                return false;
+            });
+
+            if (!inserted) {
+                quizSelectedSymptoms.appendChild(symptomDiv);
+            }
         });
     }
-    
-    
 
-    // Aggiungi questo event listener
+
     symptomsDropdown.addEventListener('change', () => {
         updateSelectedSymptoms();
     });
-    
-    
 
 
-    // Aggiungi un event listener all'input di ricerca
     searchInput.addEventListener('input', (event) => {
         const searchTerm = event.target.value.toLowerCase();
         function filterSymptoms(searchTerm) {
@@ -143,7 +199,7 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
         if (event.key === 'Enter') {
             event.preventDefault();
             const searchTerm = event.target.value.toLowerCase();
-    
+
             Array.from(symptomsDropdown.options).forEach(option => {
                 const optionText = option.text.toLowerCase();
                 if (optionText.includes(searchTerm)) {
@@ -154,19 +210,20 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
             });
         }
     });
+      
 
-    // Passa alla sezione successiva quando si fa clic sul pulsante "AVANTI"
+    // PASSA ALLA SEZIONE SUCCESSIVA CLICCANDO "AVANTI"
     quizNextBtn2.addEventListener('click', () => {
-        // Prepariamo un array di ID dei sintomi selezionati
+        // ARRAY SINTOMI SELEZIONATI
         const selectedSymptomIds = Array.from(quizSelectedSymptoms.children)
             .map(symptomDiv => parseInt(symptomDiv.getAttribute('data-id')));
-    
+
         if (selectedSymptomIds.length === 0) {
             alert("Seleziona almeno un sintomo prima di procedere.");
             return;
         }
-    
-        // Eseguiamo una richiesta AJAX per ottenere le erbe corrispondenti ai sintomi selezionati
+
+        // RICHIESTA AJAX PER TROVARE ERBE CORRISPONDENTI
         fetch(quiz_ajax_obj.ajax_url, {
             method: 'POST',
             headers: {
@@ -182,29 +239,43 @@ const quizSectionRemedies = document.getElementById("quiz-section-remedies");
             })
             .then(data => {
                 if (data.success) {
-                    const herbs = Object.values(data.data); // Converti l'oggetto in un array
+                    const herbs = Object.values(data.data); 
                     let herbsList = '';
             
                     herbs.forEach(herb => {
-                        herbsList += `<li>${herb.title}</li>`;
+                        herbsList += `<li><a href="${herb.guid}" target="_blank">${herb.title}</a></li>`;
                     });
+
+                    const selectedSymptoms = Array.from(quizSelectedSymptoms.children).map();
+                    const formattedSymptoms = selectedSymptoms.join(", ");
+
             
                     quizSectionRemedies.innerHTML = `
-                        <h3>Erbe utili contro ${quizSelectedSymptoms.textContent}</h3>
+                        <h3>Erbe che potrebbero rivelarsi utili contro:</h3>
+                        <h4><strong>${formattedSymptoms}</strong></h4>
                         <ul id="quiz-herbs-list">${herbsList}</ul>
+                        <button id="quiz-back-btn-3" class="btn btn-danger">INDIETRO</button>
                     `;
             
                     describeSymptomsSection.style.display = 'none';
                     quizSectionRemedies.style.display = 'block';
+
+                    const quizBackBtn3 = document.getElementById('quiz-back-btn-3');
+                    quizBackBtn3.addEventListener('click', function () {
+                        quizSectionRemedies.style.display = 'none';
+                        describeSymptomsSection.style.display = 'block';
+                    });
+
                 } else {
                     console.error('Errore nella richiesta AJAX:', data.data);
                 }
             })
             
+            
             .catch(error => {
                 console.error('Errore nella richiesta AJAX:', error);
             });
-    });
+        });
     
 
 });

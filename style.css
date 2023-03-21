@@ -59,6 +59,15 @@
     margin: 5px;
 }
 
+.alert  {
+    display: block;
+    padding: 5px !important;
+}
+
+  
+  
+  
+
 /*
 *
 * SECOND SECTION
@@ -114,6 +123,18 @@
     margin-left: 550px;
     color: #000;
 }
+
+#quiz-selected-symptoms {
+    margin-bottom: 50px;
+}
+
+.control-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+
 
 
 

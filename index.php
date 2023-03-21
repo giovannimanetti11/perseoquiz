@@ -21,14 +21,11 @@ add_action( 'wp_enqueue_scripts', 'perseoquiz_enqueue_styles' );
 
 
 function perseoquiz_enqueue_scripts() {
-    wp_enqueue_script('quiz-js', plugins_url('quiz.js', __FILE__));
+    // Includi quiz.js
+    wp_enqueue_script('quiz-js', plugins_url('quiz.js', __FILE__), array(), null, true);
     wp_localize_script('quiz-js', 'quiz_ajax_obj', array(
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce'    => wp_create_nonce('quiz_ajax_nonce')
     ));
-    
 }
 add_action( 'wp_enqueue_scripts', 'perseoquiz_enqueue_scripts' );
-
-
-
