@@ -45,6 +45,102 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.quiz-section {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.5s ease;
+}
+
+.quiz-section.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.quiz-popup * {
+    font-family: 'Nunito', sans-serif;
+}
+
+
+.quiz-popup-content {
+    background-color: #f5f5f5;
+}
+
+
+#open-quiz-btn,
+#quiz-next-btn,
+#quiz-next-btn-2 {
+    background: #3E92A2;
+    color: #fff;
+    border: 1px solid #3E92A2;
+}
+
+
+#quiz-section-describe-symptoms h3 {
+    color: #071c2e;
+}
+
+
+#open-quiz-btn:hover,
+#quiz-next-btn:hover,
+#quiz-back-btn-2:hover,
+#quiz-next-btn-2:hover {
+    background: #0e3457;
+    border-color: #0e3457;
+}
+
+
+.form-row input,
+.form-row select {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #3E92A2;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #071c2e;
+    background-color: #f5f5f5;
+    outline: none;
+    margin-right: 10px; 
+}
+
+
+.form-row input:last-child,
+.form-row select:last-child {
+    margin-right: 0;
+}
+
+
+.form-row input:focus,
+.form-row select:focus {
+    border-color: #0e3457;
+}
+
+
+.form-row select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23071c2e' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 8px;
+    padding-right: 1.5rem; 
+}
+
+
+.form-row input::placeholder {
+    color: #071c2e;
+    opacity: 1; 
+}
+
+.form-row select {
+    color: #071c2e;
+}
+
+.form-row select option[value=""] {
+    color: #071c2e;
+}
+
+
 /*
 *
 * FIRST SECTION
@@ -64,8 +160,17 @@
     padding: 5px !important;
 }
 
-  
-  
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.form-row input,
+.form-row select {
+    flex: 1;
+}
+
   
 
 /*
@@ -83,23 +188,12 @@
 }
 
 #quiz-symptoms-search, #quiz-symptoms-dropdown {
-    height: 30px;
+    height: 42px;
 }
 
 #quiz-symptoms-search {
     margin-top: 5px;
     margin-left: 5px;
-}
-
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.form-row input,
-.form-row select {
-    flex: 1;
 }
 
 .quiz-symptom {
@@ -134,8 +228,9 @@
     justify-content: space-between;
 }
 
-
-
+select#quiz-symptoms-dropdown {
+    box-sizing: border-box;
+}
 
 
 /*
@@ -150,4 +245,76 @@
 
 #quiz-herbs-list li {
     list-style-type: none;
+}
+
+.quiz-herbs-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin: 25px 0;
+}
+
+.quiz-herb {
+    flex: 1 1 300px;
+    max-width: 175px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+}
+
+.quiz-herb img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.quiz-herb h4 {
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
+.quiz-herb p {
+    margin-top: 4px;
+    margin-bottom: 8px;
+    min-height: 50px;
+}
+
+.quiz-herb a {
+    text-decoration: none;
+}
+
+.btn-card {
+    background: #3E92A2;
+    transition: all .3s ease;
+    color: #fff;
+    padding: 3px 20px;
+    margin: 0 5px;
+    width: 150px;
+    border-radius: 5px;
+}
+
+.btn-card:hover {
+    background: #071c2e;
+    color: #fff;
+}
+
+
+
+/* Small devices (portrait tablets and large phones, 768px and up) */
+@media only screen and (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+
+    .form-row input,
+    .form-row select {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+    #quiz-section-personal-data h3, #quiz-section-personal-data p, #quiz-section-personal-data input, #quiz-section-personal-data select {
+        margin: 5px 0;
+    }
 }

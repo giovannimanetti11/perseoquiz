@@ -20,6 +20,7 @@ function perseoquiz_shortcode() {
                     <select id="quiz-symptoms-dropdown" name="quiz-symptoms-dropdown">
                         <!-- Il contenuto è generato da quiz.js -->
                     </select>
+                    <input type="text" name="pwnneypot" id="pwnneypot" style="display:none;">
                 </div>
 
 
@@ -80,7 +81,26 @@ function perseoquiz_get_herbs_by_symptoms() {
          ORDER BY p.post_title"
     );
 
-    wp_send_json_success($herbs);
+    // Preparazione dei dati delle erbe
+    $herbs_data = array();
+    foreach ( $herbs as $herb ) {
+        // Estrai il thumbnail
+        $thumbnail_id = get_post_thumbnail_id( $herb->ID );
+        $thumbnail_url = $thumbnail_id ? wp_get_attachment_url( $thumbnail_id ) : '';
+
+        // Estrai il nome scientifico
+        $scientific_name = get_post_meta( $herb->ID, 'meta-box-nome-scientifico', true );
+
+        $herbs_data[] = array(
+            'ID' => $herb->ID,
+            'title' => $herb->title,
+            'guid' => $herb->guid,
+            'thumbnail' => $thumbnail_url,
+            'scientific_name' => $scientific_name
+        );
+    }
+
+    wp_send_json_success($herbs_data);
 }
 
 add_action('wp_ajax_perseoquiz_get_herbs_by_symptoms', 'perseoquiz_get_herbs_by_symptoms');

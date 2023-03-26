@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const symptomsDropdown = document.getElementById("quiz-symptoms-dropdown");
     const searchInput = document.getElementById('quiz-symptoms-search');
     const quizSectionRemedies = document.getElementById("quiz-section-remedies");
+    const quizPopupContent = document.getElementById("quiz-popup-content");
 
 
     // AVVIA IL POPUP CLICCANDO IL PULSANTE "APRI IL QUIZ"
@@ -24,6 +25,16 @@ document.addEventListener("DOMContentLoaded", function () {
         quizPopup.style.display = "none";
     });
 
+
+    // AGGIUNGE UN LISTENER SULLO SFONDO DEL POPUP
+    quizPopup.addEventListener("click", function (event) {
+        // SE L'ELEMENTO CLICCATO È LO SFONDO DEL POPUP (E NON IL CONTENUTO DEL POPUP O UN ELEMENTO ALL'INTERNO DI ESSO)
+        if (event.target === quizPopup) {
+            quizPopup.style.display = "none";
+        }
+    });
+
+
     // CONTENUTO "DATI PERSONALI"
     personalDataSection.innerHTML = `
         <h3>Dati personali</h3>
@@ -31,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="form-row">
             <input type="text" id="quiz-name" name="quiz-name" placeholder="Nome" required>
             <select id="quiz-age-range" name="quiz-age-range">
-                <option value="">Fascia d'età</option>
+                <option selected>Fascia d'età</option>
                 <option value="0">&lt; 18</option>
                 <option value="1">19-25</option>
                 <option value="2">26-35</option>
@@ -41,8 +52,6 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
         <div class="form-row">
             <input type="email" id="quiz-email" name="quiz-email" placeholder="Email" required>
-        
-
             <select id="quiz-gender" name="quiz-gender">
                 <option value="">Sesso</option>
                 <option value="M">M</option>
@@ -52,6 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <button id="quiz-next-btn" class="btn btn-success">AVANTI</button>
     `;
     const nextBtn = document.getElementById("quiz-next-btn");
+    
 
     // CONTROLLO SUI CAMPI PRIMA DI PASSARE ALLA SEZIONE SUCCESSIVA CLICCANDO "AVANTI"
     nextBtn.addEventListener("click", function () {
@@ -88,13 +98,33 @@ document.addEventListener("DOMContentLoaded", function () {
         
         personalDataSection.style.display = "none";
         describeSymptomsSection.style.display = "block";
-        });
-        
+    });
 
-        function isValidEmail(email) {
+    // AGGIUNGE UN CONTROLLO SUL TASTO INVIO, SE VIENE PREMUTO SI TRIGGERA IL PULSANTE "AVANTI"
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            
+            // Usa getComputedStyle invece di style.display
+            if (getComputedStyle(personalDataSection).display === "block") {
+                nextBtn.click();
+            } else if (getComputedStyle(describeSymptomsSection).display === "block") {
+                if (Array.from(quizSelectedSymptoms.children).length === 0) {
+                    alert('Seleziona almeno un sintomo prima di procedere.');
+                } else {
+                    quizNextBtn2.click();
+                }                
+            }
+        }
+    });
+    
+
+    
+    // AGGIUNGE UN CONTROLLO ESSENZIALE SULLA VALIDITA' DELL'EMAIL
+    function isValidEmail(email) {
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         return emailRegex.test(email);
-        }
+    }
         
         
     // VA ALLA SEZIONE PRECEDENTE CLICCANDO "INDIETRO"
@@ -135,6 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => {
             console.error('Errore nella richiesta AJAX:', error);
         });
+
     // AGGIORNA I SINTOMI
     function updateSelectedSymptoms() {
         Array.from(symptomsDropdown.selectedOptions).forEach((selectedOption) => {
@@ -183,18 +214,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     searchInput.addEventListener('input', (event) => {
         const searchTerm = event.target.value.toLowerCase();
-        function filterSymptoms(searchTerm) {
-            let option;
-            for (let i = 0; i < symptomsDropdown.options.length; i++) {
-                option = symptomsDropdown.options[i];
-                if (option.text.toLowerCase().indexOf(searchTerm) > -1) {
-                    option.style.display = '';
-                } else {
-                    option.style.display = 'none';
-                }
+        filterSymptoms(searchTerm);
+    });
+    
+    function filterSymptoms(searchTerm) {
+        let option;
+        for (let i = 0; i < symptomsDropdown.options.length; i++) {
+            option = symptomsDropdown.options[i];
+            if (option.text.toLowerCase().indexOf(searchTerm) > -1) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
             }
         }
-    });
+    }
+    
     searchInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -210,20 +244,19 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
-      
 
-    // PASSA ALLA SEZIONE SUCCESSIVA CLICCANDO "AVANTI"
+    
+
+    // RICHIESTA AJAX PER TROVARE ERBE CORRISPONDENTI E PASSA ALLA SEZIONE SUCCESSIVA CLICCANDO "AVANTI"
     quizNextBtn2.addEventListener('click', () => {
         // ARRAY SINTOMI SELEZIONATI
         const selectedSymptomIds = Array.from(quizSelectedSymptoms.children)
             .map(symptomDiv => parseInt(symptomDiv.getAttribute('data-id')));
 
-        if (selectedSymptomIds.length === 0) {
-            alert("Seleziona almeno un sintomo prima di procedere.");
-            return;
-        }
 
-        // RICHIESTA AJAX PER TROVARE ERBE CORRISPONDENTI
+        describeSymptomsSection.style.display = "none";
+        quizSectionRemedies.style.display = "block";
+
         fetch(quiz_ajax_obj.ajax_url, {
             method: 'POST',
             headers: {
@@ -231,53 +264,63 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             body: `action=perseoquiz_get_herbs_by_symptoms&_ajax_nonce=${quiz_ajax_obj.nonce}&symptom_ids=${selectedSymptomIds.join(',')}`
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    const herbs = Object.values(data.data); 
-                    let herbsList = '';
-            
-                    herbs.forEach(herb => {
-                        herbsList += `<li><a href="${herb.guid}" target="_blank">${herb.title}</a></li>`;
-                    });
-
-                    const selectedSymptoms = Array.from(quizSelectedSymptoms.children).map();
-                    const formattedSymptoms = selectedSymptoms.join(", ");
-
-            
-                    quizSectionRemedies.innerHTML = `
-                        <h3>Erbe che potrebbero rivelarsi utili contro:</h3>
-                        <h4><strong>${formattedSymptoms}</strong></h4>
-                        <ul id="quiz-herbs-list">${herbsList}</ul>
-                        <button id="quiz-back-btn-3" class="btn btn-danger">INDIETRO</button>
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const herbs = Object.values(data.data); 
+                let herbsList = '';
+        
+                herbs.forEach(herb => {
+                    const thumbnail = herb.thumbnail || '/path/to/default/thumbnail.png';
+                    const scientificName = herb.meta_box && herb.meta_box.nome_scientifico ? herb.meta_box.nome_scientifico : 'N/A';
+                    herbsList += `
+                        <div class="quiz-herb">
+                            <img src="${thumbnail}" alt="${herb.title}">
+                            <h4 class="card-title">${herb.title}</h4>
+                            <p class="card-scientific-name">${herb.scientific_name}</p>
+                            <a href="${herb.guid}" target="_blank" class="btn-card">Apri Scheda</a>
+                        </div>
                     `;
-            
-                    describeSymptomsSection.style.display = 'none';
-                    quizSectionRemedies.style.display = 'block';
+                });
 
-                    const quizBackBtn3 = document.getElementById('quiz-back-btn-3');
-                    quizBackBtn3.addEventListener('click', function () {
-                        quizSectionRemedies.style.display = 'none';
-                        describeSymptomsSection.style.display = 'block';
-                    });
+                const selectedSymptoms = Array.from(quizSelectedSymptoms.children).map(symptomDiv => symptomDiv.textContent);
+                const formattedSymptoms = selectedSymptoms.join(", ");
 
-                } else {
-                    console.error('Errore nella richiesta AJAX:', data.data);
-                }
-            })
-            
-            
-            .catch(error => {
-                console.error('Errore nella richiesta AJAX:', error);
-            });
+        
+                quizSectionRemedies.innerHTML = `
+                    <h3>Erbe che potrebbero rivelarsi utili contro:</h3>
+                    <h4><strong>${formattedSymptoms}</strong></h4>
+                    <div class="quiz-herbs-grid">${herbsList}</div>
+                    <button id="quiz-back-btn-3" class="btn btn-danger">INDIETRO</button>
+                `;
+
+        
+                describeSymptomsSection.style.display = 'none';
+                quizSectionRemedies.style.display = 'block';
+
+                const quizBackBtn3 = document.getElementById('quiz-back-btn-3');
+                quizBackBtn3.addEventListener('click', function () {
+                    quizSectionRemedies.style.display = 'none';
+                    describeSymptomsSection.style.display = 'block';
+                });
+
+            } else {
+                console.error('Errore nella richiesta AJAX:', data.data);
+            }
+        })
+        
+        
+        .catch(error => {
+            console.error('Errore nella richiesta AJAX:', error);
         });
-    
 
+        
+    });
 });
 
 
